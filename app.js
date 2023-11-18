@@ -1,10 +1,21 @@
 import express from "express";
 import { getConnection } from "./db.js";
+import cors from "cors";
+import morgan from "morgan";
+import fileUpload from "express-fileupload";
 
 let con = await getConnection();
 const app = express();
+
+app.use(
+  fileUpload({
+    createParentPath: true,
+  })
+);
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({ origin: true, credentials: true }));
+app.use(morgan("dev"));
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,12 +25,18 @@ app.get("/laporan", async (req, res) => {
 });
 
 app.post("/laporan", async (req, res) => {
-  console.log(req.body);
-  const { name, email, address, jenisLimbah } = req.body;
+  const { name, email, address, jenis_limbah, img_name } = req.body;
   await con.query(
-    "INSERT INTO laporan (nama, email, address, jenis_limbah) VALUES (?,?,?,?)",
-    [name, email, address, jenisLimbah]
+    "INSERT INTO laporan (nama, email, address, jenis_limbah, img_name) VALUES (?, ?, ?, ?, ?)",
+    [name, email, address, jenis_limbah, img_name]
   );
+  res.json({ msg: "success" });
+});
+
+app.post("/upload", async (req, res) => {
+  const { picture } = req.files;
+  picture.mv(`img/${picture.name}`);
+
   res.json({ msg: "success" });
 });
 
