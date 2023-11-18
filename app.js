@@ -25,19 +25,32 @@ app.get("/laporan", async (req, res) => {
 });
 
 app.post("/laporan", async (req, res) => {
-  const { name, email, address, jenis_limbah, img_name } = req.body;
+  const { name, email, notelp, address, jenis_limbah, img_name } = req.body;
   await con.query(
-    "INSERT INTO laporan (nama, email, address, jenis_limbah, img_name) VALUES (?, ?, ?, ?, ?)",
-    [name, email, address, jenis_limbah, img_name]
+    "INSERT INTO laporan (nama, email, notelp, address, jenis_limbah, status, img_name) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [
+      name,
+      email,
+      notelp,
+      address,
+      jenis_limbah,
+      "Menunggu verifikasi",
+      img_name,
+    ]
   );
   res.json({ msg: "success" });
 });
 
 app.post("/upload", async (req, res) => {
-  const { picture } = req.files;
-  picture.mv(`img/${picture.name}`);
+  try {
+    const { picture } = req.files;
+    picture.mv(`img/${picture.name}`);
 
-  res.json({ msg: "success" });
+    res.json({ status: true });
+  } catch (error) {
+    console.error(error);
+    res.json({ status: false });
+  }
 });
 
 const server = app.listen(PORT, () => {
